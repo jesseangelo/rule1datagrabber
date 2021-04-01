@@ -1,0 +1,12 @@
+<hello name="{{ name }}"></hello>
+
+Let's calc Sticker and MOS
+<form (ngSubmit)="mos()" #dataForm="ngForm">
+  <input [(ngModel)]="ticker" type="text" #ticker="ngModel" value="ticker"/>
+
+  <input (keyup)="onKey($event)">
+  <p>{{values}} </p>
+  
+  <button type="submit">MOS me</button>
+</form>
+{{ticker}}
