@@ -13,19 +13,22 @@ export class AppComponent implements OnInit {
   // https://www.alphavantage.co/documentation/
   name = "DATA";
   key = "STJWWX6PCMUT17M";
-  ticker = 'AMZN';
-  bs_url = `https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=${this.ticker}&apikey=${
-    this.key
-  }`;
-  oview_url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${this.ticker}&apikey=${
-    this.key
-  }`;
-
-  values = '';
-
-  onKey(event: any) {
-    this.values += event.target.value + ' | ';
+  ticker = "AMZN";
+  get bs_url() {
+    return `https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=${
+      this.ticker
+    }&apikey=${this.key}`;
   }
+  get oview_url() {
+    return `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${
+      this.ticker
+    }&apikey=${this.key}`;
+  }
+  futureEPS;
+  futurePrice;
+  stickerPrice;
+  MOS;
+  message;
 
   constructor(
     private httpClient: HttpClient,
@@ -40,7 +43,6 @@ export class AppComponent implements OnInit {
   // always 15%
 
   ngOnInit() {
-
     // this.httpClient.get(this.url).subscribe(console.log)
     // overview has EPS
     // overview has BookValue - need for growth rate
@@ -51,49 +53,64 @@ export class AppComponent implements OnInit {
     */
     // overview has forwardPE
     // console.log(155971000000 - 135244000000) // 20727000000
-
-    let eps, forwardPE;
-    // this.httpClient.get(this.oview_url).subscribe(oview => {
-    //   eps = +oview["EPS"];
-    //   forwardPE = +oview["ForwardPE"];
-    //   console.log(`current EPS ${eps} and forwardPE: ${forwardPE}`);
-
-    //   // get Balance sheet
-    //   this.httpClient.get(this.bs_url).subscribe(bs => {
-    //     const annualReports = bs["annualReports"];
-    //     let bookValue = [];
-    //     annualReports.forEach(year => {
-    //       console.log(
-    //         `assets: ${+year.totalAssets} liabilites: ${+year.totalLiabilities} calc: ${+year.totalAssets -
-    //           +year.totalLiabilities}`
-    //       );
-    //       bookValue.push(+year.totalAssets - +year.totalLiabilities);
-    //     });
-    //     console.log(bookValue);
-    //     const growthRate = this.rate.calc(
-    //       5,
-    //       0,
-    //       -1 * +bookValue[4],
-    //       +bookValue[0]
-    //     );
-    //     console.log(growthRate);
-
-    //     const futureEPS = this.fv.calc(growthRate, 10, 0, -1 * eps, 0);
-
-    //     console.log(`future EPS: ${futureEPS}`);
-    //     const futurePrice = futureEPS * forwardPE;
-    //     console.log(`future price: ${futurePrice}`);
-
-    //     const sticker = this.pv.calc(0.15, 10, 0, -1 * futurePrice, 0);
-    //     console.log(`sticker price ${sticker}`);
-
-    //     const MOS = sticker / 2;
-    //     console.log(`MOS: ${MOS}`);
-    //   });
-    // });
   }
 
   mos() {
-    console.log('hi ' + this.ticker)
+    this.futureEPS = 0;
+    this.futurePrice = 0;
+    this.stickerPrice = 0;
+    this.MOS = 0;
+    console.log("hi " + this.ticker);
+    this.message = `Calculating for: ${this.ticker}`;
+
+    let eps, forwardPE;
+
+    this.httpClient.get(this.oview_url).subscribe(oview => {
+      // current EPS and forward PE
+      eps = +oview["EPS"];
+      forwardPE = +oview["ForwardPE"];
+      console.log(`current EPS ${eps} and forwardPE: ${forwardPE}`);
+
+      // get Balance sheet
+      this.httpClient.get(this.bs_url).subscribe(bs => {
+        const annualReports = bs["annualReports"];
+        let bookValue = [];
+        annualReports.forEach(year => {
+          console.log(
+            `assets: ${+year.totalAssets} liabilites: ${+year.totalLiabilities} calc: ${+year.totalAssets -
+              +year.totalLiabilities}`
+          );
+          bookValue.push(+year.totalAssets - +year.totalLiabilities);
+        });
+        console.log(bookValue);
+        const growthRate = this.rate.calc(
+          5,
+          0,
+          -1 * +bookValue[4],
+          +bookValue[0]
+        );
+        console.log(growthRate);
+
+        // calc final nums
+        this.futureEPS = Math.round(
+          this.fv.calc(growthRate, 10, 0, -1 * eps, 0)
+        );
+
+        // console.log(`future EPS: ${this.futureEPS}`);
+
+        this.futurePrice = Math.round(this.futureEPS * forwardPE);
+        // console.log(`future price: ${futurePrice}`);
+
+        this.stickerPrice = Math.round(
+          this.pv.calc(0.15, 10, 0, -1 * this.futurePrice, 0)
+        );
+        //console.log(`sticker price ${this.sticker}`);
+
+        this.MOS = Math.round(this.stickerPrice / 2);
+        // console.log(`MOS: ${this.MOS}`);
+
+        this.message = `$${this.ticker}`;
+      });
+    });
   }
 }
