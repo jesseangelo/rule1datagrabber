@@ -1,18 +1,30 @@
-<hello name="{{ name }}"></hello>
+<div class="mh3">
+  <h2>Let's calc Sticker and MOS</h2>
+  <form (ngSubmit)="mos()" #dataForm="ngForm">
+    <div class="pb3">
+      <label class="w-100">Ticker:
+      <input [(ngModel)]="ticker" type="text" name="tickerval"/>
+    </label>
+    </div>
+    <div class="pb3">
+      <label class="pb4">Growth tweak?
+      <input [(ngModel)]="analystGrowthRate" type="text" name="analystGrowthRate"/>
+    </label>
+    </div>
+    <button type="submit">MOS me</button>
+  </form>
 
-Let's calc Sticker and MOS
-<form (ngSubmit)="mos()" #dataForm="ngForm">
-  <input [(ngModel)]="ticker" type="text" name="tickerval"/>
-
-
-  <button type="submit">MOS me</button>
-</form>
-<h2> {{message}}</h2>
-future EPS: {{futureEPS}}
-<br/>
-future price {{futurePrice}}
-<br/>
-sticker price {{stickerPrice}}
-<br/>
-MOS: {{MOS}}
-<br/>
+  <h2> {{message}}</h2>
+  <div *ngIf="showPrices">
+    <p>future EPS: {{futureEPS}}</p>
+    <p>future price {{futurePrice}}</p>
+    <p>sticker price {{stickerPrice}}</p>
+    <p>MOS: {{MOS}}</p>
+  </div>
+  <div *ngIf="showPrices" class="i">
+    <h3>Numbers Used:</h3>
+    <p>EPS: {{eps}}</p>
+    <p>Growth Rate: {{growthRate}}</p>
+    <p>FuturePE: {{forwardPE}}</p>
+  </div>
+</div>

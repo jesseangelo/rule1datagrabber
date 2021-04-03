@@ -24,11 +24,18 @@ export class AppComponent implements OnInit {
       this.ticker
     }&apikey=${this.key}`;
   }
+
+  eps;
+  forwardPE;
+
   futureEPS;
   futurePrice;
   stickerPrice;
   MOS;
   message;
+  growthRate;
+  analystGrowthRate;
+  showPrices = false;
 
   constructor(
     private httpClient: HttpClient,
@@ -56,20 +63,23 @@ export class AppComponent implements OnInit {
   }
 
   mos() {
+    this.showPrices = false;
     this.futureEPS = 0;
     this.futurePrice = 0;
     this.stickerPrice = 0;
     this.MOS = 0;
+
     console.log("hi " + this.ticker);
     this.message = `Calculating for: ${this.ticker}`;
 
-    let eps, forwardPE;
+    this.eps
+    this.forwardPE;
 
     this.httpClient.get(this.oview_url).subscribe(oview => {
       // current EPS and forward PE
-      eps = +oview["EPS"];
-      forwardPE = +oview["ForwardPE"];
-      console.log(`current EPS ${eps} and forwardPE: ${forwardPE}`);
+      this.eps = +oview["EPS"];
+      this.forwardPE = +oview["ForwardPE"];
+      // console.log(`current EPS ${eps} and forwardPE: ${forwardPE}`);
 
       // get Balance sheet
       this.httpClient.get(this.bs_url).subscribe(bs => {
@@ -83,22 +93,28 @@ export class AppComponent implements OnInit {
           bookValue.push(+year.totalAssets - +year.totalLiabilities);
         });
         console.log(bookValue);
-        const growthRate = this.rate.calc(
-          5,
-          0,
-          -1 * +bookValue[4],
-          +bookValue[0]
-        );
-        console.log(growthRate);
+
+        if(!this.analystGrowthRate) {
+          this.growthRate = this.rate.calc(
+            5,
+            0,
+            -1 * +bookValue[4],
+            +bookValue[0]
+          );
+        } else {
+          this.growthRate = this.analystGrowthRate;
+        }
+
+        // console.log(`Using: ${this.growthRate} growthRate`);
 
         // calc final nums
         this.futureEPS = Math.round(
-          this.fv.calc(growthRate, 10, 0, -1 * eps, 0)
+          this.fv.calc(this.growthRate, 10, 0, -1 * this.eps, 0)
         );
 
         // console.log(`future EPS: ${this.futureEPS}`);
 
-        this.futurePrice = Math.round(this.futureEPS * forwardPE);
+        this.futurePrice = Math.round(this.futureEPS * this.forwardPE);
         // console.log(`future price: ${futurePrice}`);
 
         this.stickerPrice = Math.round(
@@ -110,6 +126,7 @@ export class AppComponent implements OnInit {
         // console.log(`MOS: ${this.MOS}`);
 
         this.message = `$${this.ticker}`;
+        this.showPrices = true;
       });
     });
   }
