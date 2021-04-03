@@ -24,6 +24,11 @@ export class AppComponent implements OnInit {
       this.ticker
     }&apikey=${this.key}`;
   }
+  get quote_url() {
+    return `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${
+      this.ticker
+    }&apikey=${this.key}`;
+  }
 
   eps;
   forwardPE;
@@ -127,7 +132,14 @@ export class AppComponent implements OnInit {
 
         this.message = `$${this.ticker}`;
         this.showPrices = true;
+        this.quote();
       });
     });
+  }
+
+  quote(){
+    this.httpClient.get(this.quote_url).subscribe(pricing => {
+      console.log(pricing)
+    })
   }
 }
