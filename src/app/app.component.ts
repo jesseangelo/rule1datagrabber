@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
   growthRate;
   analystGrowthRate;
   showPrices = false;
+  pricing;
 
   constructor(
     private httpClient: HttpClient,
@@ -100,12 +101,14 @@ export class AppComponent implements OnInit {
         console.log(bookValue);
 
         if(!this.analystGrowthRate) {
-          this.growthRate = this.rate.calc(
+          
+          const workingGrowthRate = this.rate.calc(
             5,
             0,
             -1 * +bookValue[4],
             +bookValue[0]
           );
+          if(workingGrowthRate < 0.02) this.growthRate = 0.02;
         } else {
           this.growthRate = this.analystGrowthRate;
         }
