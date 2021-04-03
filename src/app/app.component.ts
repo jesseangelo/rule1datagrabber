@@ -142,6 +142,8 @@ export class AppComponent implements OnInit {
 
   quote(){
     this.httpClient.get(this.quote_url).subscribe(pricing => {
+      
+      this.pricing = '1'+pricing.toString();
       console.log(pricing)
     })
   }
